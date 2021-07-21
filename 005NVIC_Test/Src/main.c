@@ -27,6 +27,8 @@
 extern void initialise_monitor_handles(void);
 void set_interrupt();
 
+#define ADC_IRQ_POSITION 18
+
 int main(void)
 {
 	initialise_monitor_handles();
@@ -35,16 +37,21 @@ int main(void)
 
 	set_interrupt();
 
+	//Clear the pending bit in NVIC's ICER
+	uint32_t *ADC_NVIC_ICER = (uint32_t *)(0XE000E180);
+	*ADC_NVIC_ICER |= (0x1 << ADC_IRQ_POSITION);
+
 	for(;;);
 }
 
-#define ADC_IRQ_POSITION 18
 
 void set_interrupt(){
 	uint32_t *ADC_NVIC_ISER = (uint32_t *)(0xE000E100);
 	uint32_t *ADC_NVIC_ISPR = (uint32_t *)(0XE000E200);
 
+	//Set the interrupt's ISER in NVIC
 	*ADC_NVIC_ISER = (0x1 << ADC_IRQ_POSITION);
+	//Pend the interrupt
 	*ADC_NVIC_ISPR = (0x1 << ADC_IRQ_POSITION);
 
 }
